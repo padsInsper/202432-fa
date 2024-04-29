@@ -1,6 +1,6 @@
 # 202310-fa
 
-Materiais públicos da disciplina de Financial Analytics (FA) - 2023-10 (4º Tri)
+Materiais públicos da disciplina de Financial Analytics (FA) - 2024-04 (2º Tri)
 
 ## Plano dos Labs
 
