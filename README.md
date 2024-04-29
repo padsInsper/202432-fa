@@ -1,6 +1,6 @@
 # 202310-fa
 
-Materiais públicos da disciplina de Financial Analytics (FA) - 2024-04 (2º Tri)
+Materiais públicos da disciplina de Financial Analytics (FA) - 2024-32 (2º Tri)
 
 ## Plano dos Labs
 
@@ -16,7 +16,7 @@ Laboratórios de Financial Analytics. Plano inicial:
 - **Lab 2 (20/05, 19h-22h30, remoto)**
   - Modeltime -- validação cruzada
   - Tempo para fazer os exercícios
-  - Séries hierárquicas
+  - Séries hierárquicas / tópicos
   - Retorno e log-retorno
 
 - **Lab 3 (07/06, 18h-22h, presencial)**: Modelagem de séries temporais financeiras
