@@ -5,7 +5,6 @@ format:
     toc: true
     code-fold: show
     embed-resources: true
-engine: jupyter
 ---
 
 Vamos agora brincar de séries temporais.

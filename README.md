@@ -25,5 +25,5 @@ Laboratórios de Financial Analytics. Plano inicial:
   - Fronteira eficiente, CAPM, VaR
   - Tempo para fazer trabalho final
 
-- **Lab 4.1 (17/06, 19h-22h30, remoto)**: Trabalho final e tópicos
+- **Lab 4 (17/06, 19h-22h30, remoto)**: Trabalho final e tópicos
   - Tempo para fazer trabalho final
