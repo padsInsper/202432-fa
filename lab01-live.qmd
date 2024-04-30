@@ -1,0 +1,278 @@
+---
+title: "Lab01"
+format:
+  html:
+    toc: true
+    code-fold: show
+    embed-resources: true
+engine: jupyter
+---
+
+Vamos agora brincar de séries temporais.
+
+Um problema que precisamos enfrentar com séries temporais é que como os dados têm uma ordem, precisamos de alguma forma ter essa ordem escrita na base.
+
+Além disso, a ordem é pelo tempo, que é algo que tras informação por si só. Por exemplo, se estamos com uma série temporal de vendas, é natural pensar que certas épocas do ano vendam mais que outras, e que isso se repita ano a ano.
+
+Por isso, uma base de dados de série temporal precisa saber lidar com essa natureza de dados.
+
+# Bases de dados
+
+Existem diversos pacotes utilizados para armazenar séries temporais no R. Veremos 3:
+
+-   `{base}`: dá para fazer muita coisa só com o base/stats, então você verá bastante código desse tipo por aí.
+
+-   `{xts}` / `{zoo}`: serve para organizar uma base de dados no formato de série temporal.
+
+-   `{tsibble}`: é a versão *tidy*, mais recente (2017).
+
+## Base R
+
+Historicamente, isso era feito pela função `ts()`, que funciona assim:
+
+
+```{r}
+
+set.seed(1)
+
+dados <- data.frame(
+  mes = 1:48,
+  vendas = arima.sim(list(order = c(1, 1, 0), ar = 0.7), n = 48)[-1]
+)
+
+plot(dados)
+
+```
+
+```{r}
+
+dados_ts <- ts(dados)
+
+plot(dados_ts)
+
+```
+
+```{r}
+plot(dados_ts[, "vendas"])
+```
+
+```{r}
+dados_ts
+```
+
+```{r}
+dados_ts <- ts(
+  dados,
+  start = c(2005, 6),
+  frequency = 12
+)
+```
+
+```{r}
+dados_ts
+```
+
+```{r}
+plot(dados_ts[, "vendas"])
+```
+
+O pacote {forecast} (do Hyndman, livro FPP2)
+
+```{r}
+forecast::autoplot(dados_ts[, "vendas"])
+```
+
+## xts/zoo
+
+```{r}
+dados_xts <- xts::as.xts(dados_ts)
+
+class(dados_ts)
+class(dados_xts)
+```
+
+```{r}
+plot(dados_xts[, "vendas"])
+```
+
+```{r}
+forecast::autoplot(dados_xts[, "vendas"])
+```
+
+## tsibble
+
+```{r}
+
+# library(fpp3)
+
+## erro!
+tsibble::tsibble(
+  mes = dados$mes,
+  vendas = dados$vendas
+)
+```
+
+```{r}
+dados_tsibble <- tsibble::tsibble(
+  mes = dados$mes,
+  vendas = dados$vendas,
+  index = mes
+)
+```
+
+```{r}
+dados_tsibble
+```
+
+
+```{r}
+dados |>
+  tsibble::as_tsibble(index = mes)
+
+```
+
+Se tivéssemos um formato de datas na nossa base, seria assim:
+
+```{r}
+dados_mes <- dados |>
+  dplyr::mutate(
+    mes = as.Date("2005-06-01") + months(mes - 1)
+  )
+
+dados_tsibble_mes <- dados_mes |>
+  dplyr::mutate(
+    mes = tsibble::yearmonth(mes)
+  ) |>
+  tsibble::as_tsibble(index = mes)
+```
+
+```{r}
+dados_tsibble_mes
+```
+
+```{r}
+dados_tsibble <- dados |>
+  dplyr::mutate(
+    mes = tsibble::yearmonth(mes),
+    mes = mes + 12*35 + 4
+  ) |>
+  tsibble::as_tsibble(index = mes)
+```
+
+```{r}
+feasts::autoplot(dados_tsibble, vendas)
+```
+
+```{r}
+forecast::autoplot(dados_tsibble)
+```
+
+# Descritivas
+
+## Decomposição
+
+```{r}
+tsibbledata::aus_retail
+```
+
+```{r}
+
+decompose(dados_ts[,"vendas"], "multiplicative") |>
+  plot()
+
+```
+
+```{r}
+decompose(dados_ts[,"vendas"], "multiplicative") |>
+  forecast::autoplot()
+```
+
+## ACF e PACF
+
+usando base R e forecast
+
+```{r}
+dados_ts[,"vendas"] |>
+  acf()
+```
+
+```{r}
+dados_ts[,"vendas"] |>
+  forecast::Acf()
+```
+
+```{r}
+dados_ts[,"vendas"] |>
+  forecast::ggAcf()
+```
+
+```{r}
+dados_ts[,"vendas"] |>
+  pacf()
+```
+
+```{r}
+dados_ts[,"vendas"] |>
+  forecast::Pacf()
+```
+
+```{r}
+dados_ts[,"vendas"] |>
+  forecast::ggPacf()
+```
+
+agora em tsibble
+
+Decomposição
+
+
+```{r}
+
+dados_tsibble |>
+  fabletools::model(
+    decomp = feasts::classical_decomposition(vendas),
+    decomp_stl = feasts::STL(vendas)
+  ) |>
+  fabletools::components() |>
+  dplyr::filter(.model == "decomp") |>
+  feasts::autoplot()
+
+```
+
+
+```{r}
+
+dados_tsibble |>
+  feasts::ACF(vendas) |>
+  feasts::autoplot()
+
+```
+
+```{r}
+
+dados_tsibble |>
+  feasts::PACF(vendas) |>
+  feasts::autoplot()
+
+```
+
+
+```{r}
+dados_tsibble |>
+  feasts::gg_season(vendas)
+```
+
+```{r}
+dados_tsibble |>
+  feasts::gg_season(vendas, polar = TRUE)
+```
+
+```{r}
+dados_tsibble |>
+  feasts::gg_tsdisplay(vendas)
+```
+
+```{r}
+dados_tsibble |>
+  feasts::gg_tsdisplay(vendas, plot_type = "partial")
+```

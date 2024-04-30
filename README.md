@@ -1,4 +1,4 @@
-# 202310-fa
+# 202432-fa
 
 Materiais públicos da disciplina de Financial Analytics (FA) - 2024-32 (2º Tri)
 
