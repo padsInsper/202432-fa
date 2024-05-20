@@ -17,12 +17,12 @@ link <- "https://www.tesourotransparente.gov.br/ckan/dataset/f85b6632-1c9c-4beb-
 g <- httr::GET(link, httr::write_disk(tmp <- fs::file_temp(ext = ".xlsx")))
 
 dados_raw <- tmp |>
-  readxl::read_excel(1, "C38:OE38", col_names = FALSE,
+  readxl::read_excel(1, "C38:OK38", col_names = FALSE,
                      .name_repair = "minimal") |>
   janitor::clean_names() |>
   tidyr::pivot_longer(dplyr::everything()) |>
   dplyr::mutate(
-    date = seq(as.Date("1991-01-01"), as.Date("2023-09-01"), "1 month"),
+    date = seq(as.Date("1991-01-01"), as.Date("2024-03-01"), "1 month"),
     value = value / 1e9
   ) |>
   dplyr::select(-name) |>
@@ -56,7 +56,7 @@ Parece que faz sentido deflacionar a base nesse caso.
 dados <- dados_raw |>
   mutate(
     value = deflateBR::deflate(
-      value, date, "09/2023", index = "ipca"
+      value, date, "03/2024", index = "ipca"
     )
   )
 ```
@@ -93,6 +93,8 @@ tdata |>
 
 ## Teste de hipótese
 
+SARIMA(p,d=0,q)(P,D=1,Q)
+
 ```{r}
 tdata |>
   features(value, unitroot_nsdiffs)
@@ -120,6 +122,14 @@ tdata |>
   autoplot()
 ```
 
+```{r}
+tdata |>
+  fabletools::model(
+    stl = feasts::classical_decomposition(value)
+  ) |>
+  fabletools::components() |>
+  autoplot()
+```
 
 # Modelo SARIMA
 
@@ -138,7 +148,7 @@ magick::image_read("https://otexts.com/fpp3/figs/arimaflowchart.png") |>
 ```{r}
 fit <- tdata |>
   model(
-    arima_manual = ARIMA(value ~ 1 + pdq(1,0,1) + PDQ(2,1,1)),
+    arima_manual = ARIMA(value ~ 1 + pdq(1,0,2) + PDQ(1,1,1)),
     stepwise = ARIMA(value),
     search = ARIMA(value, stepwise = FALSE)
   )
@@ -177,7 +187,7 @@ augment(fit) |>
 5. Use o modelo SARIMA de sua escolha para fazer previsões h (livre escolha) passos à frente.
 
 ```{r}
-class(forecast(fit, h = 24))
+
 forecast(fit, h = 24) |>
   filter(.model == "stepwise") |>
   autoplot(tdata)
@@ -219,8 +229,8 @@ Fizemos um primeiro split para ajustar o modelo. Vamos testar sua performance de
 split_forecast <- timetk::time_series_split(
   dados,
   date_var = date,
-  initial = "12 years",
-  assess = "12 months"
+  initial = "11 years",
+  assess = "24 months"
 )
 ```
 
@@ -234,13 +244,12 @@ split_forecast |>
 
 Além disso, aqui montamos um esquema de backtesting com vários recortes
 
-
 ```{r}
 splits <- timetk::time_series_cv(
   dados,
   date_var = date,
   initial = "60 months",
-  assess = "12 months",
+  assess = "24 months",
   skip = 12,
   slice_limit = 10,
   cumulative = FALSE
