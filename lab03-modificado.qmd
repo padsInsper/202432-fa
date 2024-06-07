@@ -96,7 +96,8 @@ data_corte
 
 ```{r}
 da_train <- da |>
-  dplyr::filter(ref_date > data_corte)
+  dplyr::filter(ref_date > data_corte) |>
+  dplyr::filter(ticker != "MGFF11.SA")
 ```
 
 
@@ -215,7 +216,7 @@ garch_individual <- function(parms, ret, prog = NULL) {
 Testando para um ativo
 
 ```{r}
-garch_individual(
+resultado <- garch_individual(
   parms = list(
     p = 1, q = 1, m = 1, n = 1, dist = "std"
   ),
@@ -223,6 +224,10 @@ garch_individual(
     dplyr::filter(ticker == "HGRE11.SA") |>
     pull(ret_closing_prices)
 )
+
+
+infocriteria(resultado)
+
 ```
 
 Função para ajustar uma grid de garchs e pegar as informações
