@@ -378,3 +378,22 @@ resamples |>
   modeltime.resample::modeltime_resample_accuracy(summary_fns = mean) |>
   table_modeltime_accuracy(.interactive = FALSE)
 ```
+
+
+```{r}
+
+# Create a new metric
+wrmse <- metric_tweak(
+  .name = "wrmse",
+  .fn = rmse,
+  case_weights = coluna_pesos
+)
+
+# Add it to the default metric set
+my_metric_set <- default_forecast_accuracy_metric_set(wrmse)
+my_metric_set
+
+?adf.test
+
+?ljung_box
+```
