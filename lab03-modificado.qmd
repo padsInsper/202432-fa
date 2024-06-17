@@ -38,8 +38,8 @@ ativos <- c(
   "HGRE11.SA",
   "BTLG11.SA",
   "HGRU11.SA",
-  "VGIR11.SA",
-  "MGFF11.SA"
+  "VGIR11.SA"
+  #"MGFF11.SA"
 )
 ```
 
@@ -252,6 +252,11 @@ melhores_por_ativo <- ativos |>
 ```{r}
 #| echo: false
 melhores_por_ativo <- readr::read_rds("melhores_por_ativo.rds")
+
+melhores_por_ativo |>
+  dplyr::arrange(akaike) |>
+  dplyr::distinct(ticker, .keep_all = TRUE)
+
 ```
 
 
@@ -307,6 +312,7 @@ parametros_melhores <- melhores_por_ativo |>
   ungroup()
 
 vol_futuro <- parametros_melhores |>
+  dplyr::filter(ticker != "MGFF11.SA") |>
   group_split(ticker) |>
   purrr::map(\(x) prever_volatilidade(x, n_steps = 5)) |>
   dplyr::bind_rows()
@@ -401,7 +407,7 @@ sim_returns <- function(i) {
     )
 }
 
-portfolio_values <- purrr::map(1:5000, sim_returns, .progress = TRUE) |>
+portfolio_values <- purrr::map(1:2000, sim_returns, .progress = TRUE) |>
   bind_rows(.id = "run")
 
 min_var <- portfolio_values[which.min(portfolio_values$risk),]
@@ -414,7 +420,7 @@ Lets plot the weights of each portfolio. First with the minimum variance portfol
 ```{r}
 
 min_var |>
-  pivot_longer(2:6) |>
+  pivot_longer(2:5) |>
   mutate(name = forcats::fct_reorder(name, value)) |>
   ggplot(aes(name, value)) +
   geom_col() +
@@ -429,7 +435,7 @@ min_var |>
 
 ```{r}
 max_sr |>
-  pivot_longer(2:6) |>
+  pivot_longer(2:5) |>
   mutate(name = forcats::fct_reorder(name, value)) |>
   ggplot(aes(name, value)) +
   geom_col() +
