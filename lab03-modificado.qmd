@@ -234,7 +234,8 @@ Função para ajustar uma grid de garchs e pegar as informações
 
 ```{r}
 
-### OMITIDO
+## OMITIDO
+
 
 ```
 
@@ -554,3 +555,5 @@ capm_lm_tudo
 
 capm_lm_individual
 ```
+
+
